@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Xornite</title>
+    <style>
+        body {
+            margin: 0;
+            overflow: hidden;
+            background: radial-gradient(circle, #0a0a1a, #000);
+            font-family: Arial, sans-serif;
+        }
+        canvas {
+            display: block;
+        }
+        .header {
+            position: absolute;
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            color: white;
+            font-size: 24px;
+            font-weight: bold;
+            letter-spacing: 2px;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">XORNITE</div>
+    
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script>
+        let scene, camera, renderer, crystal, light;
+        
+        function init() {
+            scene = new THREE.Scene();
+            camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+            camera.position.z = 5;
+
+            renderer = new THREE.WebGLRenderer({ antialias: true });
+            renderer.setSize(window.innerWidth, window.innerHeight);
+            document.body.appendChild(renderer.domElement);
+
+            const geometry = new THREE.OctahedronGeometry(1.5, 0);
+            const material = new THREE.MeshStandardMaterial({ 
+                color: 0x00aaff, 
+                emissive: 0x0033aa,
+                roughness: 0.2,
+                metalness: 0.7,
+                transparent: true,
+                opacity: 0.9
+            });
+            crystal = new THREE.Mesh(geometry, material);
+            scene.add(crystal);
+
+            light = new THREE.PointLight(0x00aaff, 3, 100);
+            light.position.set(5, 5, 5);
+            scene.add(light);
+            
+            const ambientLight = new THREE.AmbientLight(0x002244);
+            scene.add(ambientLight);
+
+            animate();
+
+            document.addEventListener('mousemove', onMouseMove);
+            document.addEventListener('click', onCrystalClick);
+        }
+
+        function animate() {
+            requestAnimationFrame(animate);
+            crystal.rotation.y += 0.01;
+            crystal.position.y = Math.sin(Date.now() * 0.002) * 0.5;
+            renderer.render(scene, camera);
+        }
+
+        function onMouseMove(event) {
+            const mouseX = (event.clientX / window.innerWidth) * 2 - 1;
+            const mouseY = -(event.clientY / window.innerHeight) * 2 + 1;
+            const distance = Math.sqrt(mouseX * mouseX + mouseY * mouseY);
+            crystal.material.emissiveIntensity = Math.min(1, 0.5 + distance * 0.5);
+        }
+
+        function onCrystalClick(event) {
+            const raycaster = new THREE.Raycaster();
+            const mouse = new THREE.Vector2();
+            
+            mouse.x = (event.clientX / window.innerWidth) * 2 - 1;
+            mouse.y = -(event.clientY / window.innerHeight) * 2 + 1;
+            
+            raycaster.setFromCamera(mouse, camera);
+            const intersects = raycaster.intersectObject(crystal);
+            
+            if (intersects.length > 0) {
+                window.location.href = "https://xorneo.com";
+            }
+        }
+
+        window.addEventListener('resize', () => {
+            renderer.setSize(window.innerWidth, window.innerHeight);
+            camera.aspect = window.innerWidth / window.innerHeight;
+            camera.updateProjectionMatrix();
+        });
+        
+        init();
+    </script>
+</body>
+</html>
