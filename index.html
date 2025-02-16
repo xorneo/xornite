@@ -31,7 +31,7 @@
     
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
     <script>
-        let scene, camera, renderer, crystal, light;
+        let scene, camera, renderer, crystal, light, glowEffect;
         
         function init() {
             scene = new THREE.Scene();
@@ -58,6 +58,9 @@
             light.position.set(5, 5, 5);
             scene.add(light);
             
+            glowEffect = new THREE.PointLight(0x00ffff, 5, 20);
+            scene.add(glowEffect);
+            
             const ambientLight = new THREE.AmbientLight(0x002244);
             scene.add(ambientLight);
 
@@ -71,14 +74,16 @@
             requestAnimationFrame(animate);
             crystal.rotation.y += 0.01;
             crystal.position.y = Math.sin(Date.now() * 0.002) * 0.5;
+            glowEffect.intensity = 2 + Math.sin(Date.now() * 0.01) * 1.5;
+            glowEffect.position.set(0, 0, 5);
             renderer.render(scene, camera);
         }
 
         function onMouseMove(event) {
             const mouseX = (event.clientX / window.innerWidth) * 2 - 1;
             const mouseY = -(event.clientY / window.innerHeight) * 2 + 1;
-            const distance = Math.sqrt(mouseX * mouseX + mouseY * mouseY);
-            crystal.material.emissiveIntensity = Math.min(1, 0.5 + distance * 0.5);
+            glowEffect.position.x = mouseX * 3;
+            glowEffect.position.y = mouseY * 3;
         }
 
         function onCrystalClick(event) {
